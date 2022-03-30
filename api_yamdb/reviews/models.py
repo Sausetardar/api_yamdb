@@ -19,7 +19,7 @@ class Title(models.Model):
         Genre,
         related_name='titles',
     )
-    Category = models.ForeignKey(
+    category = models.ForeignKey(
         Category,
         related_name='titles',
         on_delete=models.SET_NULL,
