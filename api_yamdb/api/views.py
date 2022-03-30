@@ -11,24 +11,18 @@ class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 
 class GenreViewSet(CreateListDestroy):
-
-    class Meta:
-        model = models.Genre
-        serializer_class = serializers.GenreSerializer
-        permission_classes = [permissions.IsAdminOrReadOnly]
+    queryset = models.Genre.objects.all()
+    serializer_class = serializers.GenreSerializer
+    # permission_classes = [permissions.IsAdminOrReadOnly]
 
 
 class CategoryViewSet(CreateListDestroy):
-
-    class Meta:
-        model = models.Category
-        serializer_class = serializers.CategorySerializer
-        permission_classes = [permissions.IsAdminOrReadOnly]
+    queryset = models.Category.objects.all()
+    serializer_class = serializers.CategorySerializer
+    # permission_classes = [permissions.IsAdminOrReadOnly]
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-
-    class Meta:
-        model = models.Title
-        serializer_class = serializers.TitleSerializer
-        permission_classes = [permissions.IsAdminOrReadOnly]
+    queryset = models.Title.objects.all()
+    serializer_class = serializers.TitleSerializer
+    # permission_classes = [permissions.IsAdminOrReadOnly]
