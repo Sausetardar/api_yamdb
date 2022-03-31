@@ -16,6 +16,7 @@ class GenreViewSet(CreateListDestroy):
     serializer_class = serializers.GenreSerializer
     # permission_classes = [permissions.IsAdminOrReadOnly]
 
+    lookup_field = 'slug'
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
@@ -25,6 +26,7 @@ class CategoryViewSet(CreateListDestroy):
     serializer_class = serializers.CategorySerializer
     # permission_classes = [permissions.IsAdminOrReadOnly]
 
+    lookup_field = 'slug'
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
