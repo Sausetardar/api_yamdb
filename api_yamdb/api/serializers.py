@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 
 from reviews import models
 
@@ -33,14 +32,10 @@ class TitleSerializer(serializers.ModelSerializer):
         return 0  # TODO implement
 
     def create(self, validated_data):
-        category = validated_data.pop('category')
         genres = validated_data.pop('genre')
 
         # create title
         title = models.Title.objects.create(**validated_data)
-
-        # set category
-        title.category = category
 
         # add genres
         for genre in genres:
