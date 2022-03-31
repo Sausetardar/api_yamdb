@@ -1,3 +1,6 @@
+from datetime import date
+
+from django.core.validators import MaxValueValidator
 from django.db import models
 
 
@@ -13,7 +16,8 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(max_length=256)
-    year = models.IntegerField()
+    year = models.IntegerField(
+        validators=[MaxValueValidator(date.today().year)])
     description = models.TextField()
     genre = models.ManyToManyField(
         Genre,
