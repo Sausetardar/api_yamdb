@@ -33,8 +33,12 @@ class CategoryViewSet(CreateListDestroy):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = models.Title.objects.all()
-    serializer_class = serializers.TitleSerializer
     # permission_classes = [permissions.IsAdminOrReadOnly]
 
     filter_backends = (DjangoFilterBackend,)
     filter_class = filters.TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return serializers.TitleDisplaySerializer
+        return serializers.TitleCreateUpdateSerializer
