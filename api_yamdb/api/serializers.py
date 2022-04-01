@@ -43,6 +43,9 @@ class TitleCreateUpdateSerializer(serializers.ModelSerializer):
                   'genre')
         required_fields = ('name', 'year', 'category', 'genre')
 
+    def get_rating(self, obj):
+        return 0  # always 0 for new titles
+
     def create(self, validated_data):
         genres = validated_data.pop('genre')
 

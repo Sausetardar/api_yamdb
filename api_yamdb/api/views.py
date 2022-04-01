@@ -12,7 +12,7 @@ class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 
 class GenreViewSet(CreateListDestroy):
-    queryset = models.Genre.objects.all()
+    queryset = models.Genre.objects.all().order_by('-id')
     serializer_class = serializers.GenreSerializer
     # permission_classes = [permissions.IsAdminOrReadOnly]
 
@@ -22,7 +22,7 @@ class GenreViewSet(CreateListDestroy):
 
 
 class CategoryViewSet(CreateListDestroy):
-    queryset = models.Category.objects.all()
+    queryset = models.Category.objects.all().order_by('-id')
     serializer_class = serializers.CategorySerializer
     # permission_classes = [permissions.IsAdminOrReadOnly]
 
@@ -32,7 +32,7 @@ class CategoryViewSet(CreateListDestroy):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = models.Title.objects.all()
+    queryset = models.Title.objects.all().order_by('-id')
     # permission_classes = [permissions.IsAdminOrReadOnly]
 
     filter_backends = (DjangoFilterBackend,)
