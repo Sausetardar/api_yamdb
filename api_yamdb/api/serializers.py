@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 
 from reviews import models
 
@@ -16,7 +15,22 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleDisplaySerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
+
+    class Meta:
+        model = models.Title
+        fields = ('id', 'name', 'year', 'rating', 'description', 'category',
+                  'genre')
+        required_fields = ('name', 'year', 'category', 'genre')
+
+    def get_rating(self, obj):
+        return 0  # TODO implement
+
+
+class TitleCreateUpdateSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
     category = serializers.SlugRelatedField(
         slug_field='slug', queryset=models.Category.objects.all())
@@ -29,21 +43,24 @@ class TitleSerializer(serializers.ModelSerializer):
                   'genre')
         required_fields = ('name', 'year', 'category', 'genre')
 
-    def get_rating(self, obj):
-        return 0  # TODO implement
-
     def create(self, validated_data):
-        category = validated_data.pop('category')
         genres = validated_data.pop('genre')
 
         # create title
         title = models.Title.objects.create(**validated_data)
-
-        # set category
-        title.category = category
 
         # add genres
         for genre in genres:
             title.genre.add(genre)
 
         return title
+
+    def update(self, instance, validated_data):
+        genres = validated_data.pop('genre')
+
+        instance.genre.clear()
+
+        for genre in genres:
+            instance.genre.add(genre)
+
+        return instance
