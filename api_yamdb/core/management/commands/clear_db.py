@@ -9,8 +9,8 @@ class Command(BaseCommand):
         objects_to_delete = [
             models.Comment,
             models.Review,
-            models.Title,
             models.GenreTitle,
+            models.Title,
             models.Genre,
             models.Category,
             models.User,
