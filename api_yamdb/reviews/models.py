@@ -41,6 +41,7 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre,
         related_name='titles',
+        through='GenreTitle',
     )
     category = models.ForeignKey(
         Category,
@@ -54,6 +55,19 @@ class Title(models.Model):
         if hasattr(self, 'mean_score'):
             return self.mean_score
         return self.reviews.aggregate(Avg('score'))
+
+
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_genre_title',
+                fields=['genre', 'title'],
+            ),
+        ]
 
 
 class Review(models.Model):
