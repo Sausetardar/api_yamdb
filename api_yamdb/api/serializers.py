@@ -27,7 +27,7 @@ class TitleDisplaySerializer(serializers.ModelSerializer):
         required_fields = ('name', 'year', 'category', 'genre')
 
     def get_rating(self, obj):
-        return round(obj.average_score, 1) if obj.average_score else 0
+        return round(obj.average_score, 1) if obj.average_score else None
 
 
 class TitleCreateUpdateSerializer(serializers.ModelSerializer):
@@ -54,19 +54,20 @@ class TitleCreateUpdateSerializer(serializers.ModelSerializer):
 
         # add genres
         for genre in genres:
-            title.genre.add(genre)
+            models.GenreTitle.objects.create(title=title, genre=genre)
 
         return title
 
     def update(self, instance, validated_data):
-        genres = validated_data.pop('genre')
+        genres = (validated_data.pop('genre')
+                  if 'genre' in validated_data else [])
 
-        instance.genre.clear()
+        models.GenreTitle.objects.filter(title=instance).delete()
 
         for genre in genres:
-            instance.genre.add(genre)
+            models.GenreTitle.objects.create(title=instance, genre=genre)
 
-        return instance
+        return super().update(instance, validated_data)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
