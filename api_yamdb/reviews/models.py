@@ -1,4 +1,6 @@
 from datetime import date
+from django.conf import settings
+from django.db.models import Avg
 
 from django.core.validators import MaxValueValidator
 from django.db import models
@@ -45,4 +47,53 @@ class Title(models.Model):
         related_name='titles',
         on_delete=models.SET_NULL,
         null=True,
+    )
+
+    @property
+    def average_score(self):
+        if hasattr(self, 'mean_score'):
+            return self.mean_score
+        return self.reviews.aggregate(Avg('score'))
+
+
+class Review(models.Model):
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='reviews',
+        on_delete=models.CASCADE
+    )
+    title = models.ForeignKey(
+        Title,
+        related_name='reviews',
+        on_delete=models.CASCADE
+    )
+    text = models.TextField()
+    score = models.IntegerField()
+    pub_date = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_review',
+                fields=['author', 'title'],
+            ),
+        ]
+
+
+class Comment(models.Model):
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='comments',
+        on_delete=models.CASCADE
+    )
+    review = models.ForeignKey(
+        Review,
+        related_name='comments',
+        on_delete=models.CASCADE
+    )
+    text = models.TextField()
+    pub_date = models.DateTimeField(
+        auto_now_add=True
     )

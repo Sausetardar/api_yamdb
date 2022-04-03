@@ -27,7 +27,7 @@ class TitleDisplaySerializer(serializers.ModelSerializer):
         required_fields = ('name', 'year', 'category', 'genre')
 
     def get_rating(self, obj):
-        return 0  # TODO implement
+        return round(obj.average_score, 1)  # TODO implement
 
 
 class TitleCreateUpdateSerializer(serializers.ModelSerializer):
@@ -67,3 +67,27 @@ class TitleCreateUpdateSerializer(serializers.ModelSerializer):
             instance.genre.add(genre)
 
         return instance
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+
+    class Meta:
+        model = models.Review
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        read_only_fields = ('author',)
+
+    def validate_score(self, value):
+        if not (1 <= value <= 10):
+            raise serializers.ValidationError('Допустимое значение оценки - '
+                                              'от 1 до 10.')
+        return value
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+
+    class Meta:
+        model = models.Comment
+        fields = ('id', 'text', 'author', 'pub_date')
+        read_only_fields = ('author',)
