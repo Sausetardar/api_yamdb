@@ -54,17 +54,18 @@ class TitleCreateUpdateSerializer(serializers.ModelSerializer):
 
         # add genres
         for genre in genres:
-            title.genre.add(genre)
+            models.GenreTitle.objects.create(title=title, genre=genre)
 
         return title
 
     def update(self, instance, validated_data):
-        genres = validated_data.pop('genre')
+        genres = (validated_data.pop('genre')
+                  if 'genre' in validated_data else [])
 
-        instance.genre.clear()
+        models.GenreTitle.objects.filter(title=instance).delete()
 
         for genre in genres:
-            instance.genre.add(genre)
+            models.GenreTitle.objects.create(title=instance, genre=genre)
 
         return instance
 
