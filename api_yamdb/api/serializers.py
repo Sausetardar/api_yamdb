@@ -27,7 +27,7 @@ class TitleDisplaySerializer(serializers.ModelSerializer):
         required_fields = ('name', 'year', 'category', 'genre')
 
     def get_rating(self, obj):
-        return round(obj.average_score, 1)  # TODO implement
+        return round(obj.average_score, 1) if obj.average_score else 0
 
 
 class TitleCreateUpdateSerializer(serializers.ModelSerializer):
