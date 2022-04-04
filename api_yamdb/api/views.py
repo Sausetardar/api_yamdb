@@ -5,7 +5,7 @@ from . import serializers, filters
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from django.db.models import Avg
-from . import serializers, filters, permissions
+from . import serializers, filters
 from reviews import models
 from django.core.mail import EmailMessage
 from django.contrib.auth.tokens import default_token_generator
@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
-from .permissions import IsAdmin
+from .permission import IsAdmin, IsAdminOrReadOnly, ReviewCommentPermission
 
 
 class BaseCreateViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -29,7 +29,7 @@ class CreateListDestroy(mixins.CreateModelMixin, mixins.ListModelMixin,
 class GenreViewSet(CreateListDestroy):
     queryset = models.Genre.objects.all().order_by('-id')
     serializer_class = serializers.GenreSerializer
-    permission_classes = [permissions.IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     lookup_field = 'slug'
     filter_backends = (SearchFilter,)
@@ -39,7 +39,7 @@ class GenreViewSet(CreateListDestroy):
 class CategoryViewSet(CreateListDestroy):
     queryset = models.Category.objects.all().order_by('-id')
     serializer_class = serializers.CategorySerializer
-    permission_classes = [permissions.IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     lookup_field = 'slug'
     filter_backends = (SearchFilter,)
@@ -50,7 +50,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = models.Title.objects.all().order_by('-id').annotate(
         mean_score=Avg('reviews__score')
     )
-    permission_classes = [permissions.IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     filter_backends = (DjangoFilterBackend,)
     filter_class = filters.TitleFilter
@@ -162,7 +162,7 @@ class CreateUserViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
-    permission_classes = [permissions.ReviewCommentPermission]
+    permission_classes = [ReviewCommentPermission]
 
     def get_queryset(self):
         title = get_object_or_404(models.Title, pk=self.kwargs.get('title_id'))
@@ -175,7 +175,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CommentSerializer
-    permission_classes = [permissions.ReviewCommentPermission]
+    permission_classes = [ReviewCommentPermission]
 
     def get_queryset(self):
         review = get_object_or_404(
@@ -196,4 +196,3 @@ class CommentViewSet(viewsets.ModelViewSet):
         if review.title.id != int(self.kwargs.get('title_id')):
             raise Http404('Отзыв относится к другому произведению.')
         serializer.save(author=self.request.user, review=review)
-
