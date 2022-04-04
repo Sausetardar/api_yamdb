@@ -22,8 +22,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
-    'api',
-    'reviews',
+    'reviews.apps.ReviewsConfig',
+    'api.apps.ApiConfig',
+    'core.apps.CoreConfig',
 ]
 
 MIDDLEWARE = [
@@ -106,6 +107,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
 
 AUTH_USER_MODEL = 'reviews.User'
+
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS':
         'rest_framework.pagination.PageNumberPagination',

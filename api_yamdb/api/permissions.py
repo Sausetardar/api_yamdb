@@ -1,4 +1,4 @@
-from rest_framework import permissions
+from rest_framework import permissions, exceptions
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
