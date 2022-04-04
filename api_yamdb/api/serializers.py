@@ -47,29 +47,6 @@ class TitleCreateUpdateSerializer(serializers.ModelSerializer):
     def get_rating(self, obj):
         return 0  # always 0 for new titles
 
-    def create(self, validated_data):
-        genres = validated_data.pop('genre')
-
-        # create title
-        title = models.Title.objects.create(**validated_data)
-
-        # add genres
-        for genre in genres:
-            models.GenreTitle.objects.create(title=title, genre=genre)
-
-        return title
-
-    def update(self, instance, validated_data):
-        genres = (validated_data.pop('genre')
-                  if 'genre' in validated_data else [])
-
-        models.GenreTitle.objects.filter(title=instance).delete()
-
-        for genre in genres:
-            models.GenreTitle.objects.create(title=instance, genre=genre)
-
-        return super().update(instance, validated_data)
-
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()

@@ -1,5 +1,5 @@
 from rest_framework import permissions
-
+from reviews.models import User
 
 class IsAdminOrReadOnly(permissions.BasePermission):
 
@@ -7,7 +7,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return (request.user.is_authenticated
-                and request.user.role in ['admin', 'sadmin'])
+                and request.user.role in [User.ADMIN, User.SADMIN])
 
 
 class ReviewCommentPermission(permissions.BasePermission):
@@ -19,7 +19,7 @@ class ReviewCommentPermission(permissions.BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
-        if request.method == 'DELETE' and request.user.role == 'moderator':
+        if request.method == 'DELETE' and request.user.role == User.MODERATOR:
             return True
         return (
             request.method in permissions.SAFE_METHODS

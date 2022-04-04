@@ -10,7 +10,6 @@ from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from reviews import models
 from reviews.models import Review
 from . import serializers, filters
@@ -73,22 +72,6 @@ class GetTokenApiView(APIView):
         if default_token_generator.check_token(user, confirmation_code):
             return Response(status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-class EmailViewSet(BaseCreateViewSet):
-    queryset = models.User.objects.all()
-    serializer_class = serializers.EmailSerializer
-
-    def perform_create(self, serializer):
-        user = models.User.objects.create_user(
-            email=self.request.data.get('email'),
-            username=self.request.data.get('email'),
-        )
-        confirmation_code = default_token_generator.make_token(user)
-        user.password = make_password(confirmation_code)
-        user.save()
-        email = EmailMessage(confirmation_code, to=[user.email, ])
-        email.send()
 
 
 class UserViewSet(viewsets.ModelViewSet):

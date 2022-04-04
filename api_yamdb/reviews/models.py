@@ -1,10 +1,9 @@
 from datetime import date
-
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.conf import settings
 from django.db.models import Avg
+from django.core.validators import MaxValueValidator
+from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
@@ -29,11 +28,11 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.is_superuser or self.role == 'admin'
+        return self.is_superuser or self.role == User.ADMIN
 
     @property
     def is_moderator(self):
-        return self.role == 'moderator'
+        return self.role == User.MODERATOR
 
 
 class Category(models.Model):
@@ -85,7 +84,7 @@ class GenreTitle(models.Model):
 
 class Review(models.Model):
     author = models.ForeignKey(
-        get_user_model(),
+        settings.AUTH_USER_MODEL,
         related_name='reviews',
         on_delete=models.CASCADE
     )
@@ -95,8 +94,7 @@ class Review(models.Model):
         on_delete=models.CASCADE
     )
     text = models.TextField()
-    score = models.IntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(10)])
+    score = models.IntegerField()
     pub_date = models.DateTimeField(
         auto_now_add=True
     )
@@ -112,7 +110,7 @@ class Review(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(
-        get_user_model(),
+        settings.AUTH_USER_MODEL,
         related_name='comments',
         on_delete=models.CASCADE
     )
