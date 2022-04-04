@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from reviews import models
 from rest_framework.validators import UniqueValidator
+
+from reviews import models
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -78,16 +79,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         read_only_fields = ('author',)
 
-    def validate_score(self, value):
-        if not (1 <= value <= 10):
-            raise serializers.ValidationError('Допустимое значение оценки - '
-                                              'от 1 до 10.')
-        return value
-        return instance
-
 
 class GetTokenSerializer(serializers.Serializer):
-
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
 
@@ -113,7 +106,6 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=models.User.objects.all())]
     )
@@ -135,6 +127,7 @@ class SignupSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Нельзя создать пользователя с username = "me"')
         return value
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
