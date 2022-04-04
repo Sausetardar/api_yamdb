@@ -1,6 +1,6 @@
 from rest_framework import serializers
-
 from reviews import models
+from rest_framework.validators import UniqueValidator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -67,3 +67,54 @@ class TitleCreateUpdateSerializer(serializers.ModelSerializer):
             instance.genre.add(genre)
 
         return instance
+
+
+class GetTokenSerializer(serializers.Serializer):
+
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
+
+class EmailSerializer(serializers.ModelSerializer):
+    email = serializers.CharField()
+
+    class Meta:
+        model = models.User
+        fields = ('email',)
+
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    bio = serializers.CharField()
+
+    class Meta:
+        model = models.User
+        fields = (
+            'bio', 'first_name', 'last_name',
+            'username', 'email', 'role'
+        )
+        read_only_fields = ('role',)
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    email = serializers.EmailField(
+        validators=[UniqueValidator(queryset=models.User.objects.all())]
+    )
+
+    class Meta:
+        model = models.User
+        fields = (
+            'first_name', 'last_name',
+            'username', 'bio', 'email', 'role'
+        )
+
+
+class SignupSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    email = serializers.EmailField()
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Нельзя создать пользователя с username = "me"')
+        return value

@@ -16,9 +16,22 @@ class User(AbstractUser):
         (ADMIN, 'admin'),
         (SADMIN, 'sadmin'),
     )
+
     bio = models.TextField(max_length=500, blank=True, null=True)
     role = models.CharField(max_length=30, choices=ROLES, default='user')
     confirmation_code = models.CharField(max_length=200, default='FOOBAR')
+    email = models.EmailField(unique=True)
+
+    class Meta(AbstractUser.Meta):
+        ordering = ('username',)
+
+    @property
+    def is_admin(self):
+        return self.is_superuser or self.role == 'admin'
+
+    @property
+    def is_moderator(self):
+        return self.role == 'moderator'
 
 
 class Category(models.Model):
