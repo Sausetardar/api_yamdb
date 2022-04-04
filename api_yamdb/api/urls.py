@@ -7,6 +7,10 @@ router = DefaultRouter()
 
 router.register('genres', views.GenreViewSet)
 router.register('categories', views.CategoryViewSet)
+router.register('titles', views.TitleViewSet)
+router.register('auth/email', views.EmailViewSet)
+router.register('users', views.UserViewSet)
+router.register('auth/signup', views.CreateUserViewSet)
 router.register('titles', views.TitleViewSet, basename='titles')
 router.register(
     r'titles/(?P<title_id>\d+)/reviews',
@@ -21,4 +25,7 @@ router.register(
 
 urlpatterns = [
     path('v1/', include(router.urls)),
+    path(
+        'v1/auth/token/', views.GetTokenApiView.as_view(),
+        name='token_obtain_pair'),
 ]
