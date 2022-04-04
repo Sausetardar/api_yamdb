@@ -11,6 +11,18 @@ router.register('titles', views.TitleViewSet)
 router.register('auth/email', views.EmailViewSet)
 router.register('users', views.UserViewSet)
 router.register('auth/signup', views.CreateUserViewSet)
+router.register('titles', views.TitleViewSet, basename='titles')
+router.register(
+    r'titles/(?P<title_id>\d+)/reviews',
+    views.ReviewViewSet,
+    basename='reviews'
+)
+router.register(
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    views.CommentViewSet,
+    basename='comments'
+)
+
 urlpatterns = [
     path('v1/', include(router.urls)),
     path(

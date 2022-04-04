@@ -27,7 +27,7 @@ class TitleDisplaySerializer(serializers.ModelSerializer):
         required_fields = ('name', 'year', 'category', 'genre')
 
     def get_rating(self, obj):
-        return 0  # TODO implement
+        return round(obj.average_score, 1) if obj.average_score else None
 
 
 class TitleCreateUpdateSerializer(serializers.ModelSerializer):
@@ -54,18 +54,35 @@ class TitleCreateUpdateSerializer(serializers.ModelSerializer):
 
         # add genres
         for genre in genres:
-            title.genre.add(genre)
+            models.GenreTitle.objects.create(title=title, genre=genre)
 
         return title
 
     def update(self, instance, validated_data):
-        genres = validated_data.pop('genre')
+        genres = (validated_data.pop('genre')
+                  if 'genre' in validated_data else [])
 
-        instance.genre.clear()
+        models.GenreTitle.objects.filter(title=instance).delete()
 
         for genre in genres:
-            instance.genre.add(genre)
+            models.GenreTitle.objects.create(title=instance, genre=genre)
 
+        return super().update(instance, validated_data)
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+
+    class Meta:
+        model = models.Review
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        read_only_fields = ('author',)
+
+    def validate_score(self, value):
+        if not (1 <= value <= 10):
+            raise serializers.ValidationError('Допустимое значение оценки - '
+                                              'от 1 до 10.')
+        return value
         return instance
 
 
@@ -118,3 +135,11 @@ class SignupSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Нельзя создать пользователя с username = "me"')
         return value
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+
+    class Meta:
+        model = models.Comment
+        fields = ('id', 'text', 'author', 'pub_date')
+        read_only_fields = ('author',)

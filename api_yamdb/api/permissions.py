@@ -1,4 +1,4 @@
-from rest_framework import permissions
+from rest_framework import permissions, exceptions
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -25,14 +25,6 @@ class ReviewCommentPermission(permissions.BasePermission):
                 request.method in permissions.SAFE_METHODS
                 or obj.author == request.user
         )
-
-
-class IsAuthorOrModerOrReadOnly(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return (request.method in permissions.SAFE_METHODS
-                or obj.author == request.user
-                or (request.user.is_authenticated
-                    and request.user.is_moderator_or_admin))
 
 
 class IsAdmin(permissions.BasePermission):
