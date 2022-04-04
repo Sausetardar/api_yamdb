@@ -1,19 +1,19 @@
-from rest_framework import viewsets, mixins, status, permissions
-from rest_framework.filters import SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend
-from . import serializers, filters
-from django.shortcuts import get_object_or_404
-from django.http import Http404
-from django.db.models import Avg
-from . import serializers, filters
-from reviews import models
-from django.core.mail import EmailMessage
-from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.hashers import make_password
-from rest_framework.response import Response
-from rest_framework.decorators import action
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMessage
+from django.db.models import Avg
+from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets, mixins, status, permissions
+from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
+from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from reviews import models
+from reviews.models import Review
+from . import serializers, filters
 from .permission import IsAdmin, IsAdminOrReadOnly, ReviewCommentPermission
 
 
@@ -53,7 +53,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
 
     filter_backends = (DjangoFilterBackend,)
-    filter_class = filters.TitleFilter
+    filterset_class = filters.TitleFilter
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -79,8 +79,7 @@ class EmailViewSet(BaseCreateViewSet):
     queryset = models.User.objects.all()
     serializer_class = serializers.EmailSerializer
 
-    def perform_create(self):
-
+    def perform_create(self, serializer):
         user = models.User.objects.create_user(
             email=self.request.data.get('email'),
             username=self.request.data.get('email'),
@@ -93,7 +92,7 @@ class EmailViewSet(BaseCreateViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = models.User.objects.all()
+    queryset = models.User.objects.all().order_by('-id')
     serializer_class = serializers.UserSerializer
     filter_backends = [SearchFilter]
     search_fields = ('username',)
@@ -113,22 +112,23 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             serializer = self.get_serializer(username)
             return Response(serializer.data)
-        if request.method == 'PATCH':
-            serializer = self.get_serializer(username, data=request.data,
-                                             partial=True)
 
-            if serializer.is_valid() and self.request.user.is_superuser:
-                serializer.save()
-            else:
-                serializer.save(role=username.role)
+        # Patch
+        serializer = self.get_serializer(username, data=request.data,
+                                         partial=True)
+
+        if serializer.is_valid() and self.request.user.is_superuser:
+            serializer.save()
+        else:
+            serializer.save(role=username.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CreateUserViewSet(viewsets.ModelViewSet):
-    queryset = models.User.objects.all()
+    queryset = models.User.objects.all().order_by('-id')
     permission_classes = (permissions.AllowAny,)
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         serializer = serializers.SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         username = serializer.validated_data.get('username')
@@ -139,7 +139,7 @@ class CreateUserViewSet(viewsets.ModelViewSet):
                 email=email)
         except models.User.DoesNotExist:
             if models.User.objects.filter(
-                username=username
+                    username=username
             ).exists() or models.User.objects.filter(email=email).exists():
                 return Response(
                     status=status.HTTP_400_BAD_REQUEST
@@ -166,7 +166,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         title = get_object_or_404(models.Title, pk=self.kwargs.get('title_id'))
-        return title.reviews.all()
+        return title.reviews.all().order_by('-id')
+
+    def create(self, request, *args, **kwargs):
+        title = get_object_or_404(models.Title, pk=self.kwargs.get('title_id'))
+        author = self.request.user
+        if Review.objects.filter(author=author, title=title).exists():
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         title = get_object_or_404(models.Title, pk=self.kwargs.get('title_id'))
@@ -185,7 +194,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         # Проверяем, соответствует ли отзыв произведению.
         if review.title.id != int(self.kwargs.get('title_id')):
             raise Http404('Отзыв относится к другому произведению.')
-        return review.comments.all()
+        return review.comments.all().order_by('-id')
 
     def perform_create(self, serializer):
         review = get_object_or_404(
