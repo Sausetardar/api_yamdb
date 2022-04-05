@@ -48,6 +48,7 @@ class Genre(models.Model):
 class Title(models.Model):
     name = models.CharField(max_length=256)
     year = models.IntegerField(
+        db_index=True,
         validators=[MaxValueValidator(date.today().year)])
     description = models.TextField()
     genre = models.ManyToManyField(
@@ -66,7 +67,7 @@ class Title(models.Model):
     def average_score(self):
         if hasattr(self, 'mean_score'):
             return self.mean_score
-        return self.reviews.aggregate(Avg('score'))
+        return self.objects.aggregate(Avg('reviews__score'))
 
 
 class GenreTitle(models.Model):
