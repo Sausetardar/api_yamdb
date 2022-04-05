@@ -1,6 +1,6 @@
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
+from django.db import IntegrityError
 from django.db.models import Avg
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from reviews import models
 from reviews.models import Review
 from . import serializers, filters
@@ -75,7 +76,7 @@ class GetTokenApiView(APIView):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = models.User.objects.all().order_by('-id')
+    queryset = models.User.objects.all()
     serializer_class = serializers.UserSerializer
     filter_backends = [SearchFilter]
     search_fields = ('username',)
@@ -117,20 +118,11 @@ class CreateUserViewSet(viewsets.ModelViewSet):
         username = serializer.validated_data.get('username')
         email = serializer.validated_data.get('email')
         try:
-            user = models.User.objects.get(
+            user, _ = models.User.objects.get_or_create(
                 username=username,
                 email=email)
-        except models.User.DoesNotExist:
-            if models.User.objects.filter(
-                    username=username
-            ).exists() or models.User.objects.filter(email=email).exists():
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            user = models.User.objects.create_user(
-                username=username, email=email
-            )
-        user.save()
+        except IntegrityError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         message = default_token_generator.make_token(user)
         email = EmailMessage(
             message,
