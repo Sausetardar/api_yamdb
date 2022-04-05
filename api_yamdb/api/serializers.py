@@ -62,14 +62,6 @@ class GetTokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField()
 
 
-class EmailSerializer(serializers.ModelSerializer):
-    email = serializers.CharField()
-
-    class Meta:
-        model = models.User
-        fields = ('email',)
-
-
 class UserInfoSerializer(serializers.ModelSerializer):
     bio = serializers.CharField()
 
