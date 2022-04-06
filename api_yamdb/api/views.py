@@ -122,6 +122,9 @@ class CreateUserViewSet(viewsets.ModelViewSet):
                 username=username,
                 email=email)
         except IntegrityError:
+            """Если существует пользователь с таким же email, но другим
+            username или таким же username и другим email. В этом случае
+            get_or_create не спасет. Возвращаем ошибку."""
             return Response(status=status.HTTP_400_BAD_REQUEST)
         message = default_token_generator.make_token(user)
         email = EmailMessage(

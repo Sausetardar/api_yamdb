@@ -1,9 +1,10 @@
 from datetime import date
+
 from django.conf import settings
-from django.db.models import Avg
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.db.models import Avg
 
 
 class User(AbstractUser):
@@ -67,7 +68,7 @@ class Title(models.Model):
     def average_score(self):
         if hasattr(self, 'mean_score'):
             return self.mean_score
-        return self.objects.aggregate(Avg('reviews__score'))
+        return self.reviews.aggregate(Avg('score'))
 
 
 class GenreTitle(models.Model):
