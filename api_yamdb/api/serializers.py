@@ -45,7 +45,12 @@ class TitleCreateUpdateSerializer(serializers.ModelSerializer):
         required_fields = ('name', 'year', 'category', 'genre')
 
     def get_rating(self, obj):
-        return 0  # always 0 for new titles
+        """Сделано в соответствии с документацией.
+
+        При отсутствии обзоров необходимо чтобы возвращалось значение None,
+        в т.ч. при создании Title в ответе должно быть поле рейтинга.
+        """
+        return None
 
 
 class ReviewSerializer(serializers.ModelSerializer):
