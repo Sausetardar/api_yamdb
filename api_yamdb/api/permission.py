@@ -8,7 +8,7 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return (request.user.is_authenticated
-                and request.user.role in [User.ADMIN, User.SADMIN])
+                and request.user.is_admin)
 
 
 class ReviewCommentPermission(permissions.BasePermission):
@@ -20,7 +20,7 @@ class ReviewCommentPermission(permissions.BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
-        if request.method == 'DELETE' and request.user.role == User.MODERATOR:
+        if request.method == 'DELETE' and request.user.is_moderator:
             return True
         return (
             request.method in permissions.SAFE_METHODS
