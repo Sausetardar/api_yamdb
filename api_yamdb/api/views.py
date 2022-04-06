@@ -92,7 +92,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['GET', 'PATCH'], url_path='me',
             permission_classes=(permissions.IsAuthenticated,))
     def get_or_update_user(self, request):
-        username = models.User.objects.get(username=self.request.user)
+        username = self.request.user
         if request.method == 'GET':
             serializer = self.get_serializer(username)
             return Response(serializer.data)
